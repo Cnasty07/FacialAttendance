@@ -10,7 +10,8 @@ setup(
         'dlib',
         'face_recognition',
         'pandas', 
-        'scikit-learn',  
+        'scikit-learn',
+        'Pillow',
     ],
     entry_points={
         'console_scripts': [
@@ -20,7 +21,7 @@ setup(
     author='Chris Nastasi & Ruben Reyes',
     author_email='cnast01@jaguar.tamu.edu',
     description='A facial recognition based attendance system',
-    url='https://github.com/yourusername/FacialAttendance',
+    url='https://github.com/Cnasty07/FacialAttendance',
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',

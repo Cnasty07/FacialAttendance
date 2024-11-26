@@ -1,2 +1,4 @@
 .env
 .vscode
+src/controllers/dbControllerPandas.py
+__pycache__/

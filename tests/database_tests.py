@@ -1,6 +1,6 @@
 import unittest
 import sqlite3
-from ..data.db import recordsController
+from ..database.db import recordsController
 
 
 class DatabaseTests(unittest.TestCase):
