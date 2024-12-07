@@ -18,13 +18,13 @@ A Python-based facial recognition system for managing and recording student atte
 - **Modular Architecture**: Organized codebase with separate modules for components and controllers.
 - **Unit Testing**: Ensures code reliability with comprehensive tests.
 
-## Project Structure
-
 ### Database Structure
 
-- DATABASE SYSTEMS
+DATABASE SYSTEMS PROJECT
 
-```
+### Schema
+
+``` SQL
 
     Class {
         class_id: int, PK
@@ -50,4 +50,52 @@ A Python-based facial recognition system for managing and recording student atte
 
 ```
 
-Programming Languages:
+## Programming Languages
+
+INSERT ITEMS HERE FOR PL
+
+### Project Structure
+
+``` python
+.
+├── Pipfile
+├── Pipfile.lock
+├── README.md
+├── components
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── capture.py
+│   ├── comparison.py
+│   └── recognition.py
+├── controllers
+│   ├── __init__.py
+│   ├── __pycache__
+│   ├── databaseController.py
+│   └── facial_controller.py
+├── database
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-312.pyc
+│   │   └── __init__.cpython-313.pyc
+│   ├── recordsController.py
+│   ├── schema.sql
+│   ├── school.db
+│   └── tests
+│       ├── Musk.webp
+│       ├── Musk3.jpg
+│       ├── MuskComp.jpg
+│       ├── face_20241126_082103.jpg
+│       ├── face_20241126_082841.jpg
+│       ├── girlTest.jpg
+│       ├── groupPic.jpg
+│       ├── ruben1.jpg
+│       └── ruben2.jpg
+├── main.py
+├── setup.py
+├── test_db_data.py
+├── tests_facial.py
+└── ui
+    ├── __init__.py
+    ├── __pycache__
+    └── new_interface.py
+```
