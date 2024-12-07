@@ -2,17 +2,18 @@ import sys
 import os
 import face_recognition.face_detection_cli
 import numpy as np
+import pandas as pd
 import datetime
 import tkinter as tk
 from tkinter import ttk
-from tkinter import Label, Button
+from tkinter import Label, Button, messagebox
 import cv2
 from PIL import Image, ImageTk
 import threading
 from datetime import datetime
 import face_recognition
 # adding database and facial system to 
-from controllers.databaseController import ClassTable
+from controllers.databaseController import ClassTable, AttendanceTable, StudentTable , FaceTable
 from controllers.facial_controller import FacialController
 
 
@@ -64,6 +65,95 @@ class FacialAttendanceSystemApp:
             command=self.record_attendance
         )
         self.record_button.pack(pady=10)
+        
+        # Search Section
+        self.search_label = Label(root, text="Search Attendance Records:", font=("Helvetica", 14))
+        self.search_label.pack(pady=5)
+        self.search_entry = tk.Entry(root, font=("Helvetica", 14))
+        self.search_entry.pack(pady=5)
+
+        # Buttons for searching
+        self.search_student_button = Button(
+            root,
+            text="Search Student",
+            font=("Helvetica", 14),
+            command=self.search_student
+        )
+        self.search_student_button.pack(pady=5)
+
+        self.search_date_button = Button(
+            root,
+            text="Search Date",
+            font=("Helvetica", 14),
+            command=self.search_date
+        )
+        self.search_date_button.pack(pady=5)
+
+        # Initialize camera and thread
+        self.cap = cv2.VideoCapture(0)  # Open the default camera
+        self.running = True
+        self.update_camera()
+
+    def search_student(self):
+        """Query attendance records by student name."""
+        student_name = self.search_entry.get()
+        if not student_name:
+            messagebox.showerror("Error", "Please enter a student name to search.")
+            return
+
+        try:
+            attendance_table = AttendanceTable("./database/school.db")
+            query = f"""
+                SELECT * FROM attendance
+                WHERE student_id IN (
+                    SELECT id FROM student WHERE name LIKE ?
+                )
+            """
+            records = pd.read_sql_query(query, attendance_table.conn, params=(f"%{student_name}%",))
+            self.display_results(records)
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+    def search_date(self):
+        """Query attendance records by date."""
+        date = self.search_entry.get()
+        if not date:
+            messagebox.showerror("Error", "Please enter a date to search.")
+            return
+
+        try:
+            attendance_table = AttendanceTable("./database/school.db")
+            query = "SELECT * FROM attendance WHERE date LIKE ?"
+            records = pd.read_sql_query(query, attendance_table.conn, params=(f"%{date}%",))
+            self.display_results(records)
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
+    def display_results(self, records):
+        """Display the queried records in a popup window."""
+        if records.empty:
+            messagebox.showinfo("No Results", "No records found for the given query.")
+            return
+
+        result_window = tk.Toplevel(self.root)
+        result_window.title("Search Results")
+        result_window.geometry("600x400")
+
+        tree = ttk.Treeview(result_window)
+        tree["columns"] = list(records.columns)
+        tree["show"] = "headings"
+
+        for col in records.columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor="center")
+
+        for _, row in records.iterrows():
+            tree.insert("", "end", values=list(row))
+
+        tree.pack(fill="both", expand=True)
+        close_button = Button(result_window, text="Close", command=result_window.destroy)
+        close_button.pack(pady=10)
+        
 
         # Initialize camera and thread
         self.cap = cv2.VideoCapture(0)  # Open the default camera
@@ -88,24 +178,42 @@ class FacialAttendanceSystemApp:
         self.root.after(10, self.update_camera)
 
     def confirm_attendance(self, student_name, class_name, face_path):
-        """Match face and confirm attendance."""
-        # Process and match face loads image and gets encoding
-        unknown_face = FacialController.process_image(face_path)
-        # retrieves the known faces from the database
-        load_known_faces = FacialController.load_known_faces()
         
-        # Compare the unknown face to the known faces
-        is_match = FacialController.match_processed_image(unknown_face, load_known_faces)
+        try:
+            """Match face and confirm attendance."""
+            # Process and match face loads image and gets encoding
+            unknown_face = FacialController.process_image(face_path)
+            # retrieves the known faces from the database, with id as index
+            load_known_faces = FacialController.load_known_faces()
+            known_encodings = load_known_faces.values
+            print(known_encodings)
+            
+            # Compare the unknown face to the known faces
+            is_match = FacialController.match_processed_image(unknown_face, known_encodings)
 
-        # Generate current date and time
-        current_time = datetime.now()
-        formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            # Generate current date and time
+            current_time = datetime.now()
+            formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
-        if is_match[0]:
-            message = (f"Successfully recorded student {student_name} "
-                    f"on {formatted_time} for class {class_name}.")
-        else:
-            message = "No match found. Attendance not recorded."
+            if is_match[0]:
+                try:
+                    Student_table = StudentTable("./database/school.db").read()
+                    student_record = Student_table.loc[Student_table['name'] == student_name]
+                except Exception as e:
+                    print(f"Student not found:  {e}")
+                    student_record = None
+                    
+                if student_record:
+                    student_id = student_record['id']
+                    print(student_id)
+                    AttendanceTable("./database/school.db").create(student_id, class_name, formatted_time)
+                message = (f"Successfully recorded student {student_name} "
+                        f"on {formatted_time} for class {class_name}.")
+            else:
+                message = "No match found. Attendance not recorded."
+        except Exception as e:
+            print("Error: ", e)
+            message = "An error occurred. Please try again."
 
         # Show confirmation message in a new window
         self.confirm_window = tk.Toplevel(self.root)
@@ -143,40 +251,11 @@ class FacialAttendanceSystemApp:
         # Save the face ROI
         now = datetime.now()
         timestamp = now.strftime("%Y%m%d_%H%M%S")
-        face_path = f'./database/captures/face_{timestamp}.jpg'
-        cv2.imwrite(face_path, face_roi)
-        print(f"Face captured and saved to {face_path}")
-
-        student_name = self.input_entry.get() or "Unknown Student"
-        class_name = self.class_list.get() or "Unknown Class"
-        threading.Thread(target=self.confirm_attendance, args=(student_name, class_name, face_path)).start()
-        """Capture image, detect face, and initiate attendance recording."""
-        ret, frame = self.cap.read()
-        if not ret:
-            print("Failed to capture frame from camera.")
-            return
-
-        # Face detection
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-        faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
-        if len(faces) == 0:
-            print("No face detected. Please try again.")
-            return
-
-        # Process the first detected face
-        for (x, y, w, h) in faces:
-            face_roi = frame[y:y + h, x:x + w]
-            break  # Only process the first face
-
-        # Save the face ROI
-        now = datetime.now()
-        timestamp = now.strftime("%Y%m%d_%H%M%S")
         face_path = f'./database/tests/face_{timestamp}.jpg'
         cv2.imwrite(face_path, face_roi)
         print(f"Face captured and saved to {face_path}")
 
+        # Get student name and class name from input fields
         student_name = self.input_entry.get() or "Unknown Student"
         class_name = self.class_list.get() or "Unknown Class"
         threading.Thread(target=self.confirm_attendance, args=(student_name, class_name, face_path)).start()

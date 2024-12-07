@@ -9,11 +9,11 @@ CREATE TABLE class (
 );
 
 CREATE TABLE student (
-    student_id INT PRIMARY KEY,
-    student_name VARCHAR(100) NOT NULL,
-    student_classes INT,
-    student_face_data JSON,
-    FOREIGN KEY (student_classes) REFERENCES class(class_id)
+    student_id INT PRIMARY KEY, -- Student ID
+    student_name VARCHAR(100) NOT NULL, -- Full name
+    student_classes JSON, -- Array of class_id
+    student_face_data JSON, -- Array of face_id
+    FOREIGN KEY (student_classes) REFERENCES class(class_id) -- Foreign key to class table
 );
 
 CREATE TABLE attendance (
