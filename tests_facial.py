@@ -14,8 +14,8 @@ class TestFacialSystem:
         
     def test_facial(self):
         # gets image and process to encoding
-        # capture_test = facial_controller.FacialController().process_image('./database/tests/ruben1.jpg')
-        unknown_face = facial_controller.FacialController().process_image('./database/tests/Musk3.jpg')
+        unknown_face = facial_controller.FacialController().process_image('./database/tests/ruben1.jpg')
+        # unknown_face = facial_controller.FacialController().process_image('./database/tests/Musk3.jpg')
         
         # loads images and tests to array
         load_known_faces = self.load_faces_test()
@@ -23,6 +23,9 @@ class TestFacialSystem:
         known_encodings = [face_encoding for face_encoding in load_known_faces]
         # Compare the unknown face to the known faces
         is_match = self.fc.match_processed_image(unknown_face, known_encodings)
+        if is_match:
+            print("Match found!")
+        
         print(load_known_faces.index[is_match.index(True)])
         try:
             matched_student = load_known_faces.index[is_match.index(True)]
