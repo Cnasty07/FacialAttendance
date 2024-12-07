@@ -4,7 +4,6 @@ import face_recognition
 from datetime import datetime
 import numpy as np
 
-### INFO: A class to capture the image or video that is callable.
 class Capture:
     """
     Summary:

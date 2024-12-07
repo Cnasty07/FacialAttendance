@@ -4,32 +4,37 @@ import numpy as np
 import pandas as pd
 from controllers import facial_controller, databaseController
 
-def test_facial():
-    # gets image and process to encoding
-    # capture_test = facial_controller.FacialController().process_image('./database/tests/ruben1.jpg')
+class TestFacialSystem(facial_controller.FacialController):
+    def __init__(self):
+        pass
 
-    # loads images and tests to array
-    load_encoding = facial_controller.FacialController().load_known_faces()
-    # print(load_encoding.shape)
-    # converts array to encoding
-    
-    # print("capture: ",capture_test, "\nload: ",load_encoding)
+    def load_faces_test(self):
+        lkf = self.load_known_faces()
+        return lkf
+        
+    def test_facial():
+        # gets image and process to encoding
+        # capture_test = facial_controller.FacialController().process_image('./database/tests/ruben1.jpg')
 
-    
-    # result = facial_controller.FacialController.match_processed_image(capture_test,load_encoding)
-    # print(result[0])
-    pass
+        # loads images and tests to array
+        load_encoding = facial_controller.FacialController().load_known_faces()
+        print(type(load_encoding))
+        print(load_encoding.size)
+        # print(load_encoding.shape)
+        # converts array to encoding
+        
+        # print("capture: ",capture_test, "\nload: ",load_encoding)
+
+        
+        # result = facial_controller.FacialController.match_processed_image(capture_test,load_encoding)
+        # print(result[0])
+        pass
 
 
 
 def main():
-    # test_database()
-    # new_db_test = TestDatabase()
-    # new_db_test.test_student_table()
-    
-    
-    
-    test_facial()
+    test = TestFacialSystem()
+    print(test.load_faces_test())
 
     # student_table = databaseController.StudentTable()
     # student_table.create('Ruben Reyes', '1', facial_controller.FacialController().process_image('./database/tests/ruben2.jpg'))

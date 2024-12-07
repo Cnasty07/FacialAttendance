@@ -19,6 +19,7 @@ class DatabaseController(ABC):
         self.table_name = None
         self.conn = None
         self.cursor = None
+        self.schema = None
 
     # connects to the database
     def connect(self):
@@ -81,6 +82,15 @@ class ClassTable(DatabaseController):
         super().__init__(db_name)
         self.table_name = 'class'
         self.connect()
+        self.schema = {
+            'id': 'INTEGER PRIMARY KEY',
+            'name': 'TEXT NOT NULL',
+            'room_number': 'INTEGER NOT NULL',
+            'description': 'TEXT',
+            'start_date': 'DATE NOT NULL',
+            'end_date': 'DATE NOT NULL',
+            'time': 'TIME NOT NULL'
+        }
 
 
     def create(self, name, room_number, description, start_date, end_date, time):
@@ -94,7 +104,7 @@ class ClassTable(DatabaseController):
             'time': [time]
         }
         df = pd.DataFrame(data)
-        df.to_sql(self.table_name, self.conn, if_exists='append', index=False)
+        df.to_sql(self.table_name, self.conn, if_exists='append', index=False,schema=self.schema)
 
         
     
@@ -110,7 +120,7 @@ class ClassTable(DatabaseController):
             'time': time
         }
         df = pd.DataFrame([data])
-        df.to_sql(self.table_name, self.conn, if_exists='replace', index=False, method='multi', chunksize=1000)
+        df.to_sql(self.table_name, self.conn, if_exists='append', index=False, method='multi', chunksize=1000,schema=self.schema)
 
     def delete(self, class_id):
         """Delete a class record using pandas."""
@@ -124,22 +134,30 @@ class StudentTable(DatabaseController):
         super().__init__(db_name)
         self.table_name = 'student'
         self.connect()
-        data = {
-            'id': [],
-            'name': [],
-            'classes': [],
-            'face_encodings': []
+        self.schema = {
+            'id': 'INTEGER PRIMARY KEY',
+            'name': 'TEXT NOT NULL',
+            'classes': 'TEXT',
+            'face_encodings': 'TEXT'
         }
-        df = pd.DataFrame(data)
-        try:
-            df.to_sql(self.table_name, self.conn, if_exists='fail', index=False)
-        except ValueError:
-            print(f"Table {self.table_name} already exists.")
+        
+        # data = {
+        #     'id': [],
+        #     'name': [],
+        #     'classes': [],
+        #     'face_encodings': []
+        # }
+        # df = pd.DataFrame(data)
+        # try:
+        #     df.to_sql(self.table_name, self.conn, if_exists='fail', index=False)
+        # except ValueError:
+        #     print(f"Table {self.table_name} already exists.")
 
-    def create(self, name, classes, face_encodings):
+    def create(self,student_id, name, classes, face_encodings):
         """Create a new student record using pandas."""
         encoding_json = json.dumps(face_encodings)
         data = {
+            'id': [student_id],
             'name': [name],
             'classes': [classes],
             'face_encodings': [encoding_json]
@@ -257,7 +275,7 @@ class AttendanceTable(DatabaseController):
 
 class FaceTable(DatabaseController):
     """Class for managing the 'face' table."""
-    def __init__(self, db_name):
+    def __init__(self, db_name: str = None):
         self.db_name = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../database/school.db')
         super().__init__(db_name)
         self.table_name = 'face'

@@ -24,14 +24,15 @@ class FacialController:
     """
     def __init__(self, class_id: int = None):
     #     self.class_id = class_id
-        self.known_faces = self.load_known_faces()
+        # self.known_faces = self.load_known_faces()
+        pass
 
     @staticmethod
     def load_known_faces() -> pandas.DataFrame:
         student_table = db.StudentTable().read()
         known_faces = student_table.set_index('id')['face_encodings']
         for index, face_encoding in known_faces.items():
-            known_faces.at[index] = np.array(face_encoding,dtype=float)
+            known_faces.at[index] = np.array(face_encoding)
         print(known_faces[known_faces.index == 11])
         print("zero value: ", type(known_faces.values[0]))
         
