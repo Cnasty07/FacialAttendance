@@ -4,27 +4,31 @@ import numpy as np
 import pandas as pd
 from controllers import facial_controller, databaseController
 
-class TestFacialSystem(facial_controller.FacialController):
+class TestFacialSystem:
     def __init__(self):
-        pass
+        self.fc = facial_controller.FacialController()
 
     def load_faces_test(self):
-        lkf = self.load_known_faces()
+        lkf = self.fc.load_known_faces()
         return lkf
         
-    def test_facial():
+    def test_facial(self):
         # gets image and process to encoding
         # capture_test = facial_controller.FacialController().process_image('./database/tests/ruben1.jpg')
-
-        # loads images and tests to array
-        load_encoding = facial_controller.FacialController().load_known_faces()
-        print(type(load_encoding))
-        print(load_encoding.size)
-        # print(load_encoding.shape)
-        # converts array to encoding
+        unknown_face = facial_controller.FacialController().process_image('./database/tests/Musk3.jpg')
         
-        # print("capture: ",capture_test, "\nload: ",load_encoding)
-
+        # loads images and tests to array
+        load_known_faces = self.load_faces_test()
+        # collects only the face encodings
+        known_encodings = [face_encoding for face_encoding in load_known_faces]
+        # Compare the unknown face to the known faces
+        is_match = self.fc.match_processed_image(unknown_face, known_encodings)
+        print(load_known_faces.index[is_match.index(True)])
+        try:
+            matched_student = load_known_faces.index[is_match.index(True)]
+            return matched_student
+        except ValueError:
+            return "No match found."
         
         # result = facial_controller.FacialController.match_processed_image(capture_test,load_encoding)
         # print(result[0])
@@ -35,7 +39,7 @@ class TestFacialSystem(facial_controller.FacialController):
 def main():
     test = TestFacialSystem()
     print(test.load_faces_test())
-
+    match_test = test.test_facial()
     # student_table = databaseController.StudentTable()
     # student_table.create('Ruben Reyes', '1', facial_controller.FacialController().process_image('./database/tests/ruben2.jpg'))
     # all_students = student_table.read()

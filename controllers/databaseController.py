@@ -140,18 +140,6 @@ class StudentTable(DatabaseController):
             'classes': 'TEXT',
             'face_encodings': 'TEXT'
         }
-        
-        # data = {
-        #     'id': [],
-        #     'name': [],
-        #     'classes': [],
-        #     'face_encodings': []
-        # }
-        # df = pd.DataFrame(data)
-        # try:
-        #     df.to_sql(self.table_name, self.conn, if_exists='fail', index=False)
-        # except ValueError:
-        #     print(f"Table {self.table_name} already exists.")
 
     def create(self,student_id, name, classes, face_encodings):
         """Create a new student record using pandas."""
@@ -213,15 +201,14 @@ class AttendanceTable(DatabaseController):
         super().__init__(db_name)
         self.table_name = 'attendance'
         self.connect()
-        data = {
+        self.schema = {
             'id': [],
             'class_id': [],
             'student_id': [],
             'date': [],
             'status': []
         }
-        df = pd.DataFrame(data)
-        df.to_sql(self.table_name, self.conn, if_exists='append', index=False)
+        
 
     def create(self, class_id, student_id, date, status):
         """Create a new attendance record using pandas."""

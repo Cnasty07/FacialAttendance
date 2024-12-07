@@ -31,17 +31,15 @@ class DatabaseFiller(ABC):
     
 class ClassTest(DatabaseFiller):
     def fill_table(self):
-        if self.class_table.read().empty:
+        if self.class_table.read().empty == False:
+            self.delete_table()
             # class that creates class table filler data
             name = 'U.S. History'; room_number = 201; description = 'History'; start_date = '2024-01-01'; end_date = '2024-06-01'; time = '09:00:00'
-            # self.class_table.create(name, room_number, description, start_date, end_date, time)
-            # self.class_table.create('Math 101', 101, 'Introduction to Mathematics', '2022-01-01', '2022-05-01', '09:00:00')
-            # self.class_table.create('Physics 202', 202, 'Advanced Physics', '2024-02-01', '2024-07-01', '10:00:00')
-            # self.class_table.create('Chemistry 101', 203, 'Basic Chemistry', '2024-03-01', '2024-08-01', '11:00:00')
-            # self.class_table.create('Biology 101', 204, 'Introduction to Biology', '2024-04-01', '2024-09-01', '12:00:00')
-            print(self.class_table.read())
-        else:
-            print("Class table already has data.")
+            self.class_table.create(name, room_number, description, start_date, end_date, time)
+            self.class_table.create('Math 101', 101, 'Introduction to Mathematics', '2022-01-01', '2022-05-01', '09:00:00')
+            self.class_table.create('Physics 202', 202, 'Advanced Physics', '2024-02-01', '2024-07-01', '10:00:00')
+            self.class_table.create('Chemistry 101', 203, 'Basic Chemistry', '2024-03-01', '2024-08-01', '11:00:00')
+            self.class_table.create('Biology 101', 204, 'Introduction to Biology', '2024-04-01', '2024-09-01', '12:00:00')        
     
     def read_table(self):
         return self.class_table.read()
@@ -109,19 +107,21 @@ class AttendanceTest(DatabaseFiller):
 
 def main() -> None:
     
-    
-    # class_table = ClassTest()
-    # class_table.fill_table()
+    # class table filler data
+    class_table = ClassTest()
+    class_table.fill_table()
     # class_table.update_table()
-    # print(class_table.read_table())
+    print(class_table.read_table())
     
+    # student table filler data
     # need to run these two together
-    test_db_ruben = StudentTest()
-    test_db_ruben.test_database()
-    student = StudentTest()
-    student.fill_table()
-    student.read_table()
+    # test_db_ruben = StudentTest()
+    # test_db_ruben.test_database()
+    # student = StudentTest()
+    # student.fill_table()
+    # student.read_table()
     
+    # attendance table filler data
     # attendance = AttendanceTest()
     # attendance.fill_table()
     

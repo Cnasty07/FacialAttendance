@@ -28,7 +28,7 @@ class FacialController:
         pass
 
     @staticmethod
-    def load_known_faces() -> pandas.DataFrame:
+    def load_known_faces() -> pandas.Series:
         student_table = db.StudentTable().read()
         known_faces = student_table.set_index('id')['face_encodings']
         for index, face_encoding in known_faces.items():
@@ -73,19 +73,19 @@ class FacialController:
         
     @staticmethod
     # step 2: process image. Gets the face location , encoding, and comparison using recognition module
-    def process_image(capture: str = None):
+    def process_image(capture: str = None) -> np.ndarray:
         """_summary_
             process the image to get the face encoding.
         Args:
             capture (str, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            _type_:  np.ndarray: returns processed image in numpy array
         """
         try:
             # get the face location and encoding
             new_face_encoding = rec.FacialRecognition().get_face_encoding(capture)
-            print("new face encoding: ",new_face_encoding)
+            # print("new face encoding: ",new_face_encoding)
             return new_face_encoding
         except Exception as e:
             print("Error: ", e)
@@ -96,7 +96,8 @@ class FacialController:
     @staticmethod
     def match_processed_image(capture: np.ndarray, known_faces: np.ndarray) -> bool:
         
-        new_comparison_data = comp.FacialComparison.compare_faces([known_faces],capture)
+        # compare the faces but params are backwards from input to output 
+        new_comparison_data = comp.FacialComparison.compare_faces(known_faces,capture)
         
         return new_comparison_data
 
