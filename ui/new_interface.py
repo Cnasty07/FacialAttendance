@@ -1,6 +1,5 @@
-import sys
 import os
-import face_recognition.face_detection_cli
+import math
 import numpy as np
 import pandas as pd
 import datetime
@@ -11,9 +10,14 @@ import cv2
 from PIL import Image, ImageTk
 import threading
 from datetime import datetime
+<<<<<<< HEAD
 import face_recognition
 # adding database and facial system to
 from controllers.databaseController import ClassTable, AttendanceTable, StudentTable, FaceTable
+=======
+# adding database and facial system to 
+from controllers.databaseController import ClassTable, AttendanceTable, StudentTable , FaceTable
+>>>>>>> 041e1bc0e31f0fbcb625ec9a0aa61f2179d2cac1
 from controllers.facial_controller import FacialController
 
 
@@ -186,6 +190,7 @@ class FacialAttendanceSystemApp:
 
     def confirm_attendance(self, student_name, class_name, face_path):
         """Match face and confirm attendance."""
+<<<<<<< HEAD
         # Process and match face loads image and gets encoding
         unknown_face = FacialController.process_image(face_path)
         # retrieves the known faces from the database
@@ -215,6 +220,61 @@ class FacialAttendanceSystemApp:
                     f"on {formatted_time} for class {class_name}.")
         else:
             message = "No match found. Attendance not recorded."
+=======
+        
+        try:
+            # Process and match face loads image and gets encoding
+            unknown_face = FacialController.process_image(face_path)
+            # retrieves the known faces from the database, with id as index
+            try:
+                load_known_faces = FacialController.load_known_faces()
+                # collects only the face encodings
+                known_encodings = [face_encoding for face_encoding in load_known_faces]
+                # Compare the unknown face to the known faces
+                is_match = self.fc.match_processed_image(unknown_face, known_encodings)
+    
+                student_id = load_known_faces.index[is_match.index(True)]
+                
+            except ValueError:
+                print("No match found.")
+                student_id = None
+            
+            
+            # Compare the unknown face to the known faces
+            # is_match = FacialController.match_processed_image(unknown_face, known_encodings)
+
+            # Generate current date and time
+            current_time = datetime.now()
+            formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+            if is_match:
+                student_table_class = StudentTable("./database/school.db")
+                Student_table = student_table_class.read()
+                try:
+                    student_record = Student_table.loc[Student_table['id'] == student_id]
+                except Exception as e:
+                    print(f"Student not found:  {e}")
+                    student_id = math.randomInt(20,100)
+                    
+                    
+                if student_record:
+                    student_id = student_record['id']
+                    print(student_id)
+                    AttendanceTable("./database/school.db").create(student_id, class_name, formatted_time)
+                    message = (f"Successfully recorded student {student_name} " f"on {formatted_time} for class {class_name}.")
+                else:
+                    
+                    new_student = student_table_class.create(student_id, student_name, [class_name], unknown_face)
+                    
+                    message = (f"New student {student_name} added and attendance recorded "
+                               f"on {formatted_time} for class {class_name}.")
+                
+            else:
+                message = "No match found. Attendance not recorded."
+        except Exception as e:
+            print("Error: ", e)
+            message = "An error occurred. Please try again."
+>>>>>>> 041e1bc0e31f0fbcb625ec9a0aa61f2179d2cac1
 
         # Show confirmation message in a new window
         self.confirm_window = tk.Toplevel(self.root)

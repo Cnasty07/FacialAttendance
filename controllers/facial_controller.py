@@ -7,9 +7,8 @@ import components.capture as cap
 import components.comparison as comp
 import components.recognition as rec
 import controllers.databaseController as db
-from PIL import Image,ImageDraw
+import pandas
 
-# TODO: Need to fix some boilerplate code
 
 
 class FacialController:
@@ -25,19 +24,18 @@ class FacialController:
     """
     def __init__(self, class_id: int = None):
     #     self.class_id = class_id
-        self.known_faces = self.load_known_faces()
+        # self.known_faces = self.load_known_faces()
+        pass
 
     @staticmethod
-    def load_known_faces() -> np.ndarray:
+    def load_known_faces() -> pandas.Series:
         student_table = db.StudentTable().read()
-        # student_id_faces = student_table.get(['id','face_encodings'])
-        # print(student_id_faces)
+        known_faces = student_table.set_index('id')['face_encodings']
+        for index, face_encoding in known_faces.items():
+            known_faces.at[index] = np.array(face_encoding)
+        print(known_faces[known_faces.index == 11])
+        print("zero value: ", type(known_faces.values[0]))
         
-        student_id_faces = student_table.loc[student_table['id'] == 11]
-        print(student_id_faces)
-        
-        known_faces = student_table.set_index('id')['face_encodings'].to_dict()
-        # print(known_faces)
         return known_faces
     
     
@@ -46,7 +44,8 @@ class FacialController:
         # print("loading faces: ",type(known_faces))
         # return np.array(known_faces[0])
 
-    # starts the process of checking in a student
+    # -- not using this method yet -- 
+    # starts the process of checking in a student 
     def start_new_entry(self, capture_method: str = None):
         try :
             # step 1: capture face
@@ -74,19 +73,19 @@ class FacialController:
         
     @staticmethod
     # step 2: process image. Gets the face location , encoding, and comparison using recognition module
-    def process_image(capture: str = None):
+    def process_image(capture: str = None) -> np.ndarray:
         """_summary_
             process the image to get the face encoding.
         Args:
             capture (str, optional): _description_. Defaults to None.
 
         Returns:
-            _type_: _description_
+            _type_:  np.ndarray: returns processed image in numpy array
         """
         try:
             # get the face location and encoding
             new_face_encoding = rec.FacialRecognition().get_face_encoding(capture)
-            print("new face encoding: ",new_face_encoding)
+            # print("new face encoding: ",new_face_encoding)
             return new_face_encoding
         except Exception as e:
             print("Error: ", e)
@@ -97,7 +96,8 @@ class FacialController:
     @staticmethod
     def match_processed_image(capture: np.ndarray, known_faces: np.ndarray) -> bool:
         
-        new_comparison_data = comp.FacialComparison.compare_faces([known_faces],capture)
+        # compare the faces but params are backwards from input to output 
+        new_comparison_data = comp.FacialComparison.compare_faces(known_faces,capture)
         
         return new_comparison_data
 

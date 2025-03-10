@@ -13,17 +13,20 @@ print(os.path.dirname(os.path.relpath(__file__)))
 class FacialComparison:
     
     @staticmethod
-    def compare_faces(known_faces_encodings,new_img_encodings: np.ndarray = None) -> dict:
+    def compare_faces(known_faces_encodings:np.ndarray,new_img_encodings: np.ndarray = None) -> dict:
         """_summary_
         Checks database for a match of the new image. If found returns the student_id and the result of the comparison.
         If not found returns None.
         Args:
             new_img (np.ndarray, optional): _description_. Defaults to None.
         Returns:
-            dict: _description_
+            dict: array of bools to see who it is in the database
         """
+        # print("known faces: ",known_faces_encodings)
+        # print(type(known_faces_encodings))
         
         # image comparison to see if the image is the same person in database
+        # params : known_faces_encodings, new_img_encodings in that order
         comparison = face_recognition.compare_faces(known_faces_encodings, new_img_encodings)
                 
         return comparison
