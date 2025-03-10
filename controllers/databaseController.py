@@ -2,6 +2,7 @@ import sqlite3
 import json
 from abc import ABC, abstractmethod
 import os
+from sys import exception
 import pandas as pd
 
 
@@ -147,19 +148,22 @@ class StudentTable(DatabaseController):
         df = pd.DataFrame(data)
         df.to_sql(self.table_name, self.conn, if_exists='append', index=False)
 
-    def read(self, student_id=None) -> pd.DataFrame:
+    def read(self, student_id: int = None) -> pd.DataFrame:
         """Read a student record using pandas."""
-        if student_id:
+        if student_id and student_id > 0:
             df = pd.read_sql_query(f"SELECT * FROM {self.table_name} WHERE id = {student_id}", self.conn)
+            if not df.empty:
+                df['face_encodings'] = df['face_encodings'].apply(json.loads)
+            else:
+                raise ValueError(f"No student found with ID {student_id})")
+            return df
+        elif student_id is None:
+            df = pd.read_sql_query(f"SELECT * FROM {self.table_name}", self.conn)
             if not df.empty:
                 df['face_encodings'] = df['face_encodings'].apply(json.loads)
             return df
         else:
-            df = pd.read_sql_query(f"SELECT * FROM {self.table_name}", self.conn)
-            if not df.empty:
-                df['face_encodings'] = df['face_encodings'].apply(json.loads)
-                pass
-            return df
+            raise ValueError("Invalid student ID. Must be an integer.")
 
     def read_all(self):
         """Read all student records using pandas."""

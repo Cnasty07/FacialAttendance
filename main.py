@@ -4,32 +4,32 @@ import dlib
 import face_recognition
 import tkinter as tk
 from ui import new_interface
-from controllers import facial_controller , databaseController
+from controllers import facial_controller, databaseController
 
-# local imports 
+# local imports
 try:
-    from controllers import facial_controller , databaseController
+    from controllers import facial_controller, databaseController
     from ui import new_interface
 except ImportError:
     print("Error: Could not import local modules.")
 
-### TODO: Finish Entry to application
+# TODO: Finish Entry to application
 
-#main code 
+# main code
+
+
 def activate(root):
     """_summary_
     starts the facial recognition system.
     """
     # adds the CUDA path to the system path and sets dlib to use CUDA
-    try : 
-        os.add_dll_directory(os.environ['CUDA_PATH'])
+    try:
+        result = os.add_dll_directory(os.environ['CUDA_PATH'])
+        print(result)
         dlib.DLIB_USE_CUDA = True
-    except :
-        
-        print("Cuda not detected. Defaulting to cpu.")
-    
+    except Exception as e:
+        print("Cuda not detected. Defaulting to cpu.", e)
 
-    
     # starts the interface
     check_in = new_interface.FacialAttendanceSystemApp(root)
     root.protocol("WM_DELETE_WINDOW", check_in.close)
@@ -38,10 +38,11 @@ def activate(root):
 
 def deactivate():
     exit()
-    
+
 
 def main():
     activate(tk.Tk())
 
+
 if __name__ == '__main__':
-    main() 
+    main()

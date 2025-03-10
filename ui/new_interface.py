@@ -12,8 +12,8 @@ from PIL import Image, ImageTk
 import threading
 from datetime import datetime
 import face_recognition
-# adding database and facial system to 
-from controllers.databaseController import ClassTable, AttendanceTable, StudentTable , FaceTable
+# adding database and facial system to
+from controllers.databaseController import ClassTable, AttendanceTable, StudentTable, FaceTable
 from controllers.facial_controller import FacialController
 
 
@@ -26,16 +26,17 @@ class FacialAttendanceSystemApp:
         self.file_path = ""
 
         # Title
-        self.title_label = Label(root, text="Facial Attendance System", font=("Helvetica", 20, "bold"))
+        self.title_label = Label(
+            root, text="Facial Attendance System", font=("Helvetica", 20, "bold"))
         self.title_label.pack(pady=10)
-        
+
         try:
             # Class List
             classes_list = ClassTable("./database/school.db").read()
             print(classes_list)
         except Exception as e:
             print(f"An error occurred: {e}")
-        
+
         def on_select(event):
             selected_item = self.class_list.get()
         # Extract class names for the combobox
@@ -44,15 +45,16 @@ class FacialAttendanceSystemApp:
         self.class_list = ttk.Combobox(root)
         self.class_list['values'] = class_names
         self.class_list.set("Select Class")
-        self.class_list.bind("<<ComboboxSelected>>",on_select)
+        self.class_list.bind("<<ComboboxSelected>>", on_select)
         self.class_list.pack(pady=10)
 
         # Camera Feed Frame
         self.camera_frame = Label(root, width=200, height=400)
         self.camera_frame.pack(pady=10, expand=False, fill="both")
-        
+
         # Input field
-        self.input_label = Label(root, text="Enter Student Name:", font=("Helvetica", 14))
+        self.input_label = Label(
+            root, text="Enter Student Name:", font=("Helvetica", 14))
         self.input_label.pack(pady=5)
         self.input_entry = tk.Entry(root, font=("Helvetica", 14))
         self.input_entry.pack(pady=5)
@@ -65,9 +67,10 @@ class FacialAttendanceSystemApp:
             command=self.record_attendance
         )
         self.record_button.pack(pady=10)
-        
+
         # Search Section
-        self.search_label = Label(root, text="Search Attendance Records:", font=("Helvetica", 14))
+        self.search_label = Label(
+            root, text="Search Attendance Records:", font=("Helvetica", 14))
         self.search_label.pack(pady=5)
         self.search_entry = tk.Entry(root, font=("Helvetica", 14))
         self.search_entry.pack(pady=5)
@@ -98,7 +101,8 @@ class FacialAttendanceSystemApp:
         """Query attendance records by student name."""
         student_name = self.search_entry.get()
         if not student_name:
-            messagebox.showerror("Error", "Please enter a student name to search.")
+            messagebox.showerror(
+                "Error", "Please enter a student name to search.")
             return
 
         try:
@@ -109,7 +113,8 @@ class FacialAttendanceSystemApp:
                     SELECT id FROM student WHERE name LIKE ?
                 )
             """
-            records = pd.read_sql_query(query, attendance_table.conn, params=(f"%{student_name}%",))
+            records = pd.read_sql_query(
+                query, attendance_table.conn, params=(f"%{student_name}%",))
             self.display_results(records)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
@@ -124,7 +129,8 @@ class FacialAttendanceSystemApp:
         try:
             attendance_table = AttendanceTable("./database/school.db")
             query = "SELECT * FROM attendance WHERE date LIKE ?"
-            records = pd.read_sql_query(query, attendance_table.conn, params=(f"%{date}%",))
+            records = pd.read_sql_query(
+                query, attendance_table.conn, params=(f"%{date}%",))
             self.display_results(records)
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
@@ -132,7 +138,8 @@ class FacialAttendanceSystemApp:
     def display_results(self, records):
         """Display the queried records in a popup window."""
         if records.empty:
-            messagebox.showinfo("No Results", "No records found for the given query.")
+            messagebox.showinfo(
+                "No Results", "No records found for the given query.")
             return
 
         result_window = tk.Toplevel(self.root)
@@ -151,9 +158,9 @@ class FacialAttendanceSystemApp:
             tree.insert("", "end", values=list(row))
 
         tree.pack(fill="both", expand=True)
-        close_button = Button(result_window, text="Close", command=result_window.destroy)
+        close_button = Button(result_window, text="Close",
+                              command=result_window.destroy)
         close_button.pack(pady=10)
-        
 
         # Initialize camera and thread
         self.cap = cv2.VideoCapture(0)  # Open the default camera
@@ -183,9 +190,10 @@ class FacialAttendanceSystemApp:
         unknown_face = FacialController.process_image(face_path)
         # retrieves the known faces from the database
         load_known_faces = FacialController.load_known_faces()
-        
+
         # Compare the unknown face to the known faces
-        is_match = FacialController.match_processed_image(unknown_face, load_known_faces)
+        is_match = FacialController.match_processed_image(
+            unknown_face, load_known_faces)
 
         # Generate current date and time
         current_time = datetime.now()
@@ -198,10 +206,11 @@ class FacialAttendanceSystemApp:
             except Exception as e:
                 print(f"Student not found:  {e}")
                 student_record = None
-                
+
             if student_record:
                 student_id = student_record['id']
-                AttendanceTable("./database/school.db").create(student_id, class_name, formatted_time)
+                AttendanceTable(
+                    "./database/school.db").create(student_id, class_name, formatted_time)
             message = (f"Successfully recorded student {student_name} "
                     f"on {formatted_time} for class {class_name}.")
         else:
@@ -215,9 +224,9 @@ class FacialAttendanceSystemApp:
             self.confirm_window, text=message, font=("Helvetica", 12), wraplength=350, justify="center"
         )
         self.confirmation_label.pack(pady=20)
-        close_button = Button(self.confirm_window, text="Close", command=self.confirm_window.destroy)
+        close_button = Button(self.confirm_window, text="Close",
+                              command=self.confirm_window.destroy)
         close_button.pack(pady=10)
-
 
     def record_attendance(self):
         """Capture image, detect face, and initiate attendance recording."""
@@ -228,8 +237,10 @@ class FacialAttendanceSystemApp:
 
         # Face detection
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-        faces = face_cascade.detectMultiScale(gray_frame, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        face_cascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        faces = face_cascade.detectMultiScale(
+            gray_frame, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
 
         if len(faces) == 0:
             print("No face detected. Please try again.")
@@ -250,8 +261,8 @@ class FacialAttendanceSystemApp:
         # Get student name and class name from input fields
         student_name = self.input_entry.get() or "Unknown Student"
         class_name = self.class_list.get() or "Unknown Class"
-        threading.Thread(target=self.confirm_attendance, args=(student_name, class_name, face_path)).start()
-
+        threading.Thread(target=self.confirm_attendance, args=(
+            student_name, class_name, face_path)).start()
 
     def close(self):
         """Clean up resources when the application is closed."""
