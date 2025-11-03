@@ -3,6 +3,5 @@
 src/controllers/dbControllerPandas.py
 __pycache__/
 **/__pycache__/
-/build
+/build/*
 /FacialAttendance.egg-info
-
